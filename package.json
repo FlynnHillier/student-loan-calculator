@@ -1,0 +1,20 @@
+{
+  "name": "student-loan-calculator",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/FlynnHillier/student-loan-calculator.git"
+  },
+  "keywords": [],
+  "author": "FlynnHillier",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/FlynnHillier/student-loan-calculator/issues"
+  },
+  "homepage": "https://github.com/FlynnHillier/student-loan-calculator#readme"
+}
