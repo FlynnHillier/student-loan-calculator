@@ -4,6 +4,23 @@ export class StudentLoan {
     public installments : Map<Year,number> = new Map<Year,number>() //installments mapped between years
     public interest:Multiplier
 
+    private income : {
+        amount:number,
+        annualAppreciation?:{
+            percentage:Multiplier,
+            absolute:number,
+        },
+        threshold:{
+            amount:number,
+            enforcedRepayment:Multiplier
+        },
+    } = {
+        amount:0,
+        threshold:{
+            amount:25000,
+            enforcedRepayment:0.91,
+        }
+    }
     
     /**
      * 
@@ -21,7 +38,7 @@ export class StudentLoan {
     /**
      * @description the year in which the first installment is made. (0 if no installments present)
      */
-    get firstLoanYear() : Year {
+    get firstInstallmentYear() : Year {
         const firstYear = Array.from(this.installments.keys())
         .reduce((lowestValue,value)=>{
             return lowestValue < value ? lowestValue : value  
@@ -46,43 +63,44 @@ export class StudentLoan {
      * @returns - {year,value}[] - year in question; value, value of loan at given year 
      */
     getYearsPeriod(period:{start?:Year,end?:Year} = {},repayment:{absolute?:number,percentage?:Multiplier} = {}) : YearsValue[]{
-        if(!this.isPopulated){
-            return []
-        }
-
-        const firstLoanYear = this.firstLoanYear
+        const firstInstallmentYear = this.firstInstallmentYear
 
         if(!period.start){
-            period.start = firstLoanYear
+            period.start = firstInstallmentYear
         }
 
         if(!period.end){
             period.end = period.start + 22
         }
 
-        const periodLength = period.end - period.start
+        const periodLength = period.end - period.start + 1
 
-        if(periodLength < 0){
+        if(periodLength < 1){
             return []
         }
 
-        if(periodLength === 0){
-            return [this.getSingleYear(period.start)]
+        if(!this.isPopulated){
+            return new Array(periodLength).map((v,i)=>{
+                return {
+                    year:period.start! + i,
+                    value:0
+                }
+            })
         }
 
-        //period starts x years after startYear of loan, hence zeroFill x start values of output array
-        const yearsSinceStartOfLoan = period.start - firstLoanYear
-        const zeroFill = yearsSinceStartOfLoan < 0 ? firstLoanYear - period.start : 0
         
-        const calculations : YearsValue[] = [
-            this.getSingleYear(period.start)
-        ]
+        //period starts x years after startYear of loan, hence zeroFill x start values of output array
+        const yearsAfterFirstInstallmentOfPeriodStart = period.start - firstInstallmentYear
+        const zeroFill = yearsAfterFirstInstallmentOfPeriodStart < 0 ? firstInstallmentYear - period.start : 0
+        
+        const calculations : YearsValue[] = []
+        //retry
+        let accumulator = 0
+        for(let i = 0; i < yearsAfterFirstInstallmentOfPeriodStart + periodLength;i++){
+            let currentYear = firstInstallmentYear + i
 
-        //calculate further year's values
-        let accumulator = calculations[0].value
-        for(let i = 1; i < periodLength - zeroFill + 1; i++){
-             //calculate any repayments if necessary
-            if(repayment){
+            //calculate any repayments if necessary
+             if(repayment){
                 accumulator -= repayment.absolute || 0
                 accumulator *= repayment.percentage || 1
             }
@@ -96,14 +114,16 @@ export class StudentLoan {
             accumulator *= this.interest
 
             //add new installment if present
-            const installment = this.installments.get(period.start + zeroFill + i)
+            const installment = this.installments.get(currentYear)
             if(installment){
                 accumulator += installment
             }
 
-            calculations[i] = {
-                year:period.start + zeroFill + i,
-                value:accumulator
+            if(i >= yearsAfterFirstInstallmentOfPeriodStart){
+                calculations[i - yearsAfterFirstInstallmentOfPeriodStart - zeroFill] = {
+                    year:currentYear,
+                    value:accumulator
+                }
             }
         }
 
@@ -120,60 +140,4 @@ export class StudentLoan {
             ...calculations
         ]
     }
-
-    /**
-     * 
-     * @param year - year to recieve data bout
-     * @param repayment -{absolute}: an absolute value to be deducted from the value of the loan annually; {percentage}: a percentage value to be repaid annually; #NOT ADVISABLE TO DECLARE BOTH
-     * @returns - {year,value} - year in question; value, value of loan at given year 
-     */
-    getSingleYear(year:Year,repayment:{absolute?:number,percentage?:Multiplier} = {}) : YearsValue{
-        if(!this.isPopulated){
-            return {
-                year:year,
-                value:0
-            }
-        }
-
-        const firstLoanYear = this.firstLoanYear
-        const yearsAfterStart = year - firstLoanYear
-        if(yearsAfterStart < 0){
-            return {
-                year:year,
-                value:0
-            }
-        }
-
-        let accumulator = this.installments.get(firstLoanYear)
-        if(!accumulator){
-            throw `no initial installment was found for year ${firstLoanYear} - suggested to be firstLoanYear`
-        }
-        for(let i= 1; i < yearsAfterStart; i++){
-            if(repayment){
-                accumulator -= repayment.absolute || 0
-                accumulator *= repayment.percentage || 1
-            }
-
-            if(accumulator < 0){
-                accumulator = 0
-            }
-
-            accumulator *= this.interest
-
-
-            //add new installment if present
-            const installment = this.installments.get(firstLoanYear + i)
-            if(installment){
-                accumulator += installment
-            }
-
-        }
-        return {
-            year:year,
-            value:accumulator
-        }
-    }
 }
-
-const x = new StudentLoan([{year:2000,value:9000},{year:2007,value:9000}],1.06)
-console.log(x.getYearsPeriod({},{absolute:1500}))
