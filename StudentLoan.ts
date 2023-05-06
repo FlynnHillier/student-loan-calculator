@@ -1,5 +1,6 @@
 import { Multiplier,Year,YearsValue } from "./types"
 
+
 export class StudentLoan {
     public installments : Map<Year,number> = new Map<Year,number>() //installments mapped between years
     public interest:Multiplier
@@ -7,18 +8,21 @@ export class StudentLoan {
     private income : {
         amount:number,
         annualAppreciation?:{
-            percentage:Multiplier,
-            absolute:number,
+            multiplier?:Multiplier,
+            absolute?:number,
         },
         threshold:{
             amount:number,
-            enforcedRepayment:Multiplier
+            enforcedRepaymentMutliplier:Multiplier
         },
     } = {
-        amount:0,
+        amount:29000,
         threshold:{
             amount:25000,
-            enforcedRepayment:0.91,
+            enforcedRepaymentMutliplier:0.09,
+        },
+        annualAppreciation:{
+            multiplier:1.05
         }
     }
     
@@ -62,7 +66,7 @@ export class StudentLoan {
      * @param repayment - {absolute}: an absolute value to be deducted from the value of the loan annually; {percentage}: a percentage value to be repaid annually; #NOT ADVISABLE TO DECLARE BOTH 
      * @returns - {year,value}[] - year in question; value, value of loan at given year 
      */
-    getYearsPeriod(period:{start?:Year,end?:Year} = {},repayment:{absolute?:number,percentage?:Multiplier} = {}) : YearsValue[]{
+    getYearsPeriod(period:{start?:Year,end?:Year} = {},repayment:{absolute?:number,multiplier?:Multiplier} = {}) : YearsValue[]{
         const firstInstallmentYear = this.firstInstallmentYear
 
         if(!period.start){
@@ -94,35 +98,87 @@ export class StudentLoan {
         const zeroFill = yearsAfterFirstInstallmentOfPeriodStart < 0 ? firstInstallmentYear - period.start : 0
         
         const calculations : YearsValue[] = []
-        //retry
-        let accumulator = 0
+
+
+        //initialise accumulator for calculation
+        let accumulator = {
+            loanValue:0,
+            repayments:{
+                enforced:0,
+                additional:0,
+            },
+            income:this.income.amount
+        }
+
         for(let i = 0; i < yearsAfterFirstInstallmentOfPeriodStart + periodLength;i++){
             let currentYear = firstInstallmentYear + i
 
-            //calculate any repayments if necessary
-             if(repayment){
-                accumulator -= repayment.absolute || 0
-                accumulator *= repayment.percentage || 1
+
+            //calculate enforced repayments based on income
+            const enforced = this._calculateEnforcedRepayment(accumulator.loanValue,accumulator.income)
+            //calculate any additional optional repayments (considering already paid enforced repayments)
+            let additional = 0
+
+            //if repayment option is provided, and there is still value left on loan to be repaid after enforced amount
+            if(repayment && (accumulator.loanValue - enforced) > 0){
+                if(repayment.absolute && repayment.absolute > enforced){
+                    additional = repayment.absolute - enforced                    
+                } else if(repayment.multiplier){
+                    additional = (accumulator.loanValue * repayment.multiplier) - enforced
+                }
+
+                //if additional amount is more than is remaining on the loan, only add the amount remaining on the loan
+                additional =  additional < (accumulator.loanValue - enforced) ? additional : (accumulator.loanValue - enforced)
             }
 
+
+            //update the accumulator with calculated values
+            accumulator.repayments.additional += additional
+            accumulator.repayments.enforced += enforced
+            accumulator.loanValue -= additional
+            accumulator.loanValue -= enforced
+
+
             //round to zero if loan value is now negative
-            if(accumulator < 0){
-                accumulator = 0
+            if(accumulator.loanValue < 0){
+                accumulator.loanValue = 0
             }
             
             //apply loan interest
-            accumulator *= this.interest
+            accumulator.loanValue *= this.interest
 
             //add new installment if present
             const installment = this.installments.get(currentYear)
             if(installment){
-                accumulator += installment
-            }
+                accumulator.loanValue += installment
+            }   
 
+            //record calculations if necessary within specified period
             if(i >= yearsAfterFirstInstallmentOfPeriodStart){
                 calculations[i - yearsAfterFirstInstallmentOfPeriodStart - zeroFill] = {
                     year:currentYear,
-                    value:accumulator
+                    value:accumulator.loanValue,
+                    repayments:{
+                        marginal:{
+                            enforced:enforced,
+                            additional:additional,
+                        },
+                        cumulative:{
+                            enforced:accumulator.repayments.enforced,
+                            additional:accumulator.repayments.additional,
+                        }
+                    },
+                    income:accumulator.income
+                }
+            }
+
+            //apply any annual increase to income
+            if(this.income.annualAppreciation){
+                const {absolute,multiplier} = this.income.annualAppreciation
+                if(absolute){
+                    accumulator.income += absolute
+                } else if(multiplier){
+                    accumulator.income *= multiplier
                 }
             }
         }
@@ -140,4 +196,17 @@ export class StudentLoan {
             ...calculations
         ]
     }
+
+
+    private _calculateEnforcedRepayment(loanValue:number,income:number) : number {
+        if(income <= this.income.threshold.amount){
+            return 0
+        }
+
+        const enforcableAmount = (income - this.income.threshold.amount) * this.income.threshold.enforcedRepaymentMutliplier
+
+        //if the loan is entirely repaid,return loan value; else return enforcable amount
+        return enforcableAmount > loanValue ? loanValue : enforcableAmount
+    }
+
 }
