@@ -1,4 +1,4 @@
-import { Multiplier,Year,YearsValue } from "./types"
+import { Multiplier,Year,YearsValue } from "../types/types"
 
 
 export class StudentLoan {
