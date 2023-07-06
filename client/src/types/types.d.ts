@@ -1,7 +1,7 @@
 export type Multiplier = number
 export type Year = number
 
-export interface YearsValue {
+export interface YearGraphingEntry {
     year:number
     value:number
     repayments?:{
