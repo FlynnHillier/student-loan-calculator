@@ -1,6 +1,6 @@
 import { useState,useEffect } from "react";
 import { useConfig } from "./useConfig";
-import { YearGraphingEntry,Year, Multiplier, ConfigEntries } from "../types/types";
+import { YearGraphingEntry,Year, ConfigEntries } from "../types/types";
 
 
 interface GraphingParamaters {
@@ -14,7 +14,6 @@ interface GraphingParamaters {
 function calculateGraphingData(config:ConfigEntries,paramaters:GraphingParamaters) : YearGraphingEntry[] {
     const {period} = paramaters
     const {income,installments,repayment,interest} = config
-
 
     //calculate first installment year
     const firstInstallmentYear = function(){
@@ -31,7 +30,7 @@ function calculateGraphingData(config:ConfigEntries,paramaters:GraphingParamater
     }
 
     if(!period.end){
-        period.end = period.start + 22
+        period.end = period.start + 40
     }
 
     const periodLength = period.end - period.start + 1
@@ -41,7 +40,7 @@ function calculateGraphingData(config:ConfigEntries,paramaters:GraphingParamater
     }
 
     if(installments.size === 0){
-        return new Array(periodLength).map((v,i)=>{
+        return new Array(periodLength).fill(null).map((v,i)=>{
             return {
                 year:period.start! + i,
                 value:0
@@ -69,7 +68,6 @@ function calculateGraphingData(config:ConfigEntries,paramaters:GraphingParamater
 
     for(let i = 0; i < yearsAfterFirstInstallmentOfPeriodStart + periodLength;i++){
         let currentYear = firstInstallmentYear + i
-
 
         //calculate enforced repayments based on income (0 if isActive flag in config is set to false)
         const enforced = !config.income.threshold.isActive ? 0 : function(loanValue : number,incomeAmount : number){
