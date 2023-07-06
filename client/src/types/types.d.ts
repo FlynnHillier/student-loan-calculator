@@ -16,3 +16,26 @@ export interface YearGraphingEntry {
     }
     income?:number
 }
+
+
+export interface ConfigEntries {
+    installments: Map<Year,number>
+    interest:Multiplier,
+    income: {
+        amount:number,
+        appreciation:{
+            active: "MULTI" | "ABS" | "NONE"
+            multiplier:Multiplier,
+            absolute:number,
+        },
+        threshold:{
+            isActive:boolean, //decide wether to utilise values displayed.
+            amount:number,
+            enforcedRepaymentMutliplier:Multiplier
+        }
+    }
+    repayment:{
+        absolute?:number
+        multiplier?:Multiplier
+    }
+}
