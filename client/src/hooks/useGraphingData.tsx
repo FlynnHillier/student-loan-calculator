@@ -71,8 +71,8 @@ function calculateGraphingData(config:ConfigEntries,paramaters:GraphingParamater
         let currentYear = firstInstallmentYear + i
 
 
-        //calculate enforced repayments based on income
-        const enforced = function(loanValue : number,incomeAmount : number){
+        //calculate enforced repayments based on income (0 if isActive flag in config is set to false)
+        const enforced = !config.income.threshold.isActive ? 0 : function(loanValue : number,incomeAmount : number){
             if(incomeAmount <= income.threshold.amount){
                 return 0
             }
@@ -180,10 +180,32 @@ export const useGraphingData = () => {
     
     const {installments,interest} = useConfig()
 
-
-
     useEffect(()=>{
-        //recalculate graphing data here.   
+        setGraphingData(()=>{
+            return calculateGraphingData(
+                {
+                    installments:installments,
+                    interest:interest,
+                    income:{
+                        amount:0,
+                        appreciation:{
+                            active:"NONE",
+                            multiplier:1,
+                            absolute:0,
+                        },
+                        threshold:{
+                            isActive:true,
+                            amount:25000,
+                            enforcedRepaymentMutliplier:1.09,
+                        }
+                    },
+                    repayment:{}
+                },
+                {
+                    period:{}
+                }
+            )
+        })   
     },[installments,interest])
 
 
