@@ -175,15 +175,14 @@ function calculateGraphingData(config:ConfigEntries,paramaters:GraphingParamater
 export const useGraphingData = () => {
     let [graphingData,setGraphingData] = useState<YearGraphingEntry[]>([])
 
-    
     const {installments,interest} = useConfig()
 
     useEffect(()=>{
         setGraphingData(()=>{
             return calculateGraphingData(
                 {
-                    installments:installments,
-                    interest:interest,
+                    installments:installments.state,
+                    interest:interest.state,
                     income:{
                         amount:0,
                         appreciation:{
@@ -204,7 +203,7 @@ export const useGraphingData = () => {
                 }
             )
         })   
-    },[installments,interest])
+    },[installments.state,interest.state])
 
 
     return {
