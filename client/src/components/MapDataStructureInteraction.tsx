@@ -3,31 +3,36 @@ import "./../styles/mapDataStructureInteraction.css"
 import {PiPlus} from "react-icons/pi"
 import {RxCross2} from "react-icons/rx"
 import {useFocusWithin} from 'react-aria';
-
+import TypeConversionInput from './TypeConversionInput';
 
 
 interface Props {
     title?:string
-    mapState:Map<string,string>
+    mapState:Map<string | number,string | number>
     setMapState:React.Dispatch<React.SetStateAction<Map<any, any>>>
     input?:{
-        valueType?:HTMLInputTypeAttribute,
-        keyType?:HTMLInputTypeAttribute,
+        valueType?:"string" | "number",
+        keyType?:"string" | "number",
     }
 }
 
+type KeyType = string | number
+
+type ValueType = string | number
+
+
 const MapDataStructureInteraction = ({mapState,setMapState,title,input}:Props) => {
-    let [arrayRepresentation,setArrayRepresentation] = useState<[key:string, value: string][]>(Array.from(mapState.entries()))
+    let [arrayRepresentation,setArrayRepresentation] = useState<[key:KeyType, value:ValueType][]>(Array.from(mapState.entries()))
 
     //temporary state to prevent state being updated on every ammendment. Only update once user deselects input field.
-    let [activeEditKey,setActiveEditKey] = useState<null | string>(null)
-    let [activeEditValue,setActiveEditValue] = useState<string | null>(null)
+    let [activeEditKey,setActiveEditKey] = useState<null | KeyType>(null)
+    let [activeEditValue,setActiveEditValue] = useState<null | ValueType>(null)
     
     //new entry state (allows user to add a new entry to map)
     let [isCreatingNewEntry,setIsCreatingNewEntry] = useState<boolean>(false)
     let [newEntryIsFocusedWithin,setNewEntryIsFocusedWithin] = useState<boolean>(false)
-    let [newEntryKey,setNewEntryKey] = useState<string>("")
-    let [newEntryValue,setNewEntryValue] = useState<string>("")
+    let [newEntryKey,setNewEntryKey] = useState<KeyType>("")
+    let [newEntryValue,setNewEntryValue] = useState<ValueType>("")
 
     const newEntryKeyInputRef = useRef<any>(null)
 
@@ -56,20 +61,20 @@ const MapDataStructureInteraction = ({mapState,setMapState,title,input}:Props) =
 
     
     //## EDIT EXISTING MAP ENTRY ##
-    function handleExistingValueChange(event:React.ChangeEvent<HTMLInputElement>,key:string) {        
+    function handleExistingValueChange(event:React.ChangeEvent<HTMLInputElement>,key:KeyType) {        
         setActiveEditKey(key)
         setActiveEditValue(event.target.value)
     }
 
     //commit changes once user defocuses input field (prevent excessive state updates)
-    function handleBlur(key:string){
+    function handleBlur(key:KeyType){
         if(key === activeEditKey && activeEditValue){
             commitChange(key,activeEditValue)
         }
     }
     
     //update map state with user edits
-    function commitChange(key:string,value:string){
+    function commitChange(key:KeyType,value:ValueType){
         setMapState((prev)=>{
             prev.set(key,value)
             setActiveEditKey(null)
@@ -79,7 +84,7 @@ const MapDataStructureInteraction = ({mapState,setMapState,title,input}:Props) =
     }
 
     //## REMOVE EXISTING MAP ENTRY ##
-    function onClickRemoveEntry(key:string) {
+    function onClickRemoveEntry(key:KeyType) {
         setMapState((prev)=>{
             prev.delete(key)
             return new Map(prev)
@@ -109,7 +114,7 @@ const MapDataStructureInteraction = ({mapState,setMapState,title,input}:Props) =
     }
 
     //attempt to update state with a new map entry
-    function attemptAddEntry(key:string,value:string){
+    function attemptAddEntry(key:KeyType,value:ValueType){
         if(key && value){
             setMapState((prev)=>{
                 prev.set(key,value)
@@ -119,13 +124,13 @@ const MapDataStructureInteraction = ({mapState,setMapState,title,input}:Props) =
     }
 
     //update newEntryValue state on user input
-    function handleNewEntryValueChange(event:React.ChangeEvent<HTMLInputElement>) {
-        setNewEntryValue(event.target.value)
+    function handleNewEntryValueChange(value: ValueType) {
+        setNewEntryValue(value)
     }
 
     //update newEntryKey state on user input
-    function handleNewEntryKeyChange(event:React.ChangeEvent<HTMLInputElement>) {
-        setNewEntryKey(event.target.value)
+    function handleNewEntryKeyChange(value: KeyType) {
+        setNewEntryKey(value)
     }
 
     //listen for enter key presses in order to allow users to submit new entry with keyboard
@@ -191,20 +196,21 @@ const MapDataStructureInteraction = ({mapState,setMapState,title,input}:Props) =
                         }}
                     >
                         <div className="key">
-                            <input 
+                            <TypeConversionInput
+                                convertTo={input?.keyType || "string"}
+                                onValueChange={handleNewEntryKeyChange} 
                                 type={input?.keyType} 
                                 ref={newEntryKeyInputRef}
                                 value={newEntryKey}
-                                onChange={handleNewEntryKeyChange}
                                 onKeyDown={handleNewEntryKeyDown}
-                            >
-                            </input>
+                            />
                         </div>
-                        <input 
+                        <TypeConversionInput 
+                            onValueChange={handleNewEntryValueChange}
+                            convertTo={input?.valueType || "string"}
                             className='editValue'
                             type={input?.valueType}
                             value={newEntryValue}
-                            onChange={handleNewEntryValueChange}
                             onKeyDown={handleNewEntryKeyDown}
                         />
                     </div>
