@@ -27,20 +27,20 @@ const TypeConversionInput = React.forwardRef<HTMLInputElement,Props>(({children,
           case "number":
             return Number(event.target.value)
           case "string":
-            return event.target.value
+            return String(event.target.value)
           default:
             return "" //return empty string on error to make identifying such an error easier, as type errors can be hard to identify when using GUI
         }
       }()
-      setInputValue(setTo)
+      setInputValue(event.target.value)
       onValueChange(setTo)
     }
 
     return <input
+        {...props}
         ref={ref}
         onChange={handleChange}
         value={inputValue}
-        {...props}
     >
       {children}
     </input>
