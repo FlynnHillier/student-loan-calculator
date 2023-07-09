@@ -1,6 +1,6 @@
-import {useState, HTMLInputTypeAttribute, useEffect,useRef} from 'react'
+import {useState,useRef} from 'react'
 import "./../styles/inputPlus.css"
-
+import TypeConversionInput from './TypeConversionInput'
 
 interface SelectionOption {
     setState:(...args:any[]) => any,
@@ -8,7 +8,7 @@ interface SelectionOption {
     interface:{
         label?:string,
         placeholder?:string,
-        type?:HTMLInputTypeAttribute
+        type?:"string" | "number"
     }
 }
 
@@ -22,8 +22,6 @@ const ToggleInput = ({options,onSelectionChange}:Props) => {
     const [activeSelectionIndex,setActiveSelectionIndex] = useState<number>(0)
 
     const inputRef = useRef<any>(null)
-
-
 
     function changeSelection(){
         setActiveSelectionIndex((previousSelection)=>{
@@ -53,12 +51,9 @@ const ToggleInput = ({options,onSelectionChange}:Props) => {
         inputRef.current.type = options[activeSelectionIndex].interface.type
     }
 
-    function handleInput(event:React.ChangeEvent<HTMLInputElement>){
-        if(event.target){
-            options[activeSelectionIndex].setState(event.target.value || "")
-        }
+    function handleValueChange(value:string | number){
+        options[activeSelectionIndex].setState(value)
     }
-
 
     return (
             options.length <= 0 ? <></> : 
@@ -66,12 +61,13 @@ const ToggleInput = ({options,onSelectionChange}:Props) => {
                 <button className={`inputplus label ${options.length > 1 ? "isMulti" : ""}`} onClick={handleClick}>
                         {options[activeSelectionIndex].interface.label}
                 </button>
-                <input
+                <TypeConversionInput
+                    convertTo='number'
+                    onValueChange={handleValueChange}
                     ref={inputRef}
                     className='inputplus input'
                     placeholder={options[activeSelectionIndex].interface.placeholder}
                     type={options[activeSelectionIndex].interface.type}
-                    onChange={handleInput}
                     value={options[activeSelectionIndex].state}
                 />
             </div>
