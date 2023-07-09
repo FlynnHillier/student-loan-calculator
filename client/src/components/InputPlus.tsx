@@ -18,7 +18,7 @@ interface Props {
 }
 
 
-const ToggleInput = ({options,onSelectionChange}:Props) => {
+const InputPlus = ({options,onSelectionChange}:Props) => {
     const [activeSelectionIndex,setActiveSelectionIndex] = useState<number>(0)
 
     const inputRef = useRef<any>(null)
@@ -74,4 +74,4 @@ const ToggleInput = ({options,onSelectionChange}:Props) => {
     )
 }
 
-export default ToggleInput
+export default InputPlus
