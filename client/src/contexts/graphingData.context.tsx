@@ -168,35 +168,64 @@ function calculateGraphingData(config:ConfigEntries,paramaters:GraphingParamater
 export const useProvideGraphingData = () => {
     let [graphingData,setGraphingData] = useState<YearGraphingEntry[]>([])
 
-    const {installments,interest,incomeAmount} = useConfig()
+    const {
+        installments,
+        interest,
+        incomeAmount,
+        incomeAppreciationActive,
+        incomeAppreciationMulti,
+        incomeAppreciationAbsolute,
+        incomeThresholdAmount,
+        incomeThresholdEnforcedMultiplier,
+        incomeThresholdIsActive,
+        repaymentAbsolute,
+        repaymentMultiplier,
+    } = useConfig()
 
     useEffect(()=>{
         setGraphingData(()=>{
-            return calculateGraphingData(
+            const calculation = calculateGraphingData(
                 {
                     installments:installments.state,
                     interest:interest.state,
                     income:{
                         amount:incomeAmount.state,
                         appreciation:{
-                            active:"NONE",
-                            multiplier:1,
-                            absolute:0,
+                            active:incomeAppreciationActive.state,
+                            multiplier:incomeAppreciationMulti.state,
+                            absolute:incomeAppreciationAbsolute.state,
                         },
                         threshold:{
-                            isActive:true,
-                            amount:25000,
-                            enforcedRepaymentMutliplier:1.09,
+                            isActive:incomeThresholdIsActive.state,
+                            amount:incomeThresholdAmount.state,
+                            enforcedRepaymentMutliplier:incomeThresholdEnforcedMultiplier.state,
                         }
                     },
-                    repayment:{}
+                    repayment:{
+                       multiplier:repaymentAbsolute.state,
+                       absolute:repaymentAbsolute.state, 
+                    }
                 },
                 {
                     period:{}
                 }
             )
+            return calculation
         })   
-    },[installments.state,interest.state,incomeAmount.state])
+
+    },[
+        installments.state,
+        interest.state,
+        incomeAmount.state,
+        incomeAppreciationActive.state,
+        incomeAppreciationMulti.state,
+        incomeAppreciationAbsolute.state,
+        incomeThresholdAmount.state,
+        incomeThresholdEnforcedMultiplier.state,
+        incomeThresholdIsActive.state,
+        repaymentAbsolute.state,
+        repaymentMultiplier.state,
+    ])
 
 
     return {
