@@ -1,0 +1,24 @@
+.inputInterface.frame {
+    width:600px;
+    height:500px;
+    border:1px solid black;
+    display: grid;
+    grid-template-columns: 250px 350px;
+    padding:10px;
+}
+
+.inputInterface .inputSection {
+    padding:5px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    grid-column: 1 2;
+    row-gap: 20px;
+}
+
+.inputInterface .installMentSection {
+    display: flex;
+    justify-content: center;
+    grid-column: 2;
+}
+

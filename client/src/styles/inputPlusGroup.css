@@ -1,0 +1,33 @@
+.inputPlusGroup.frame {
+
+}
+
+.inputPlusGroup {
+    display: flex;
+    flex-wrap: wrap;
+    row-gap: 5px;
+}
+
+.inputPlusGroup > .label {
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+    line-height: 22px;
+    font-size: 20px;
+    order:0;
+    margin: 0px 0px;
+}
+
+.inputPlusGroup > .sublabel {
+    line-height: 18px;
+    font-size: 15px;
+    margin: 0px 0px;
+}
+
+.inputPlusGroup .inputplus.frame:not(:first-of-type) {
+    margin-top: 5px;
+}
+
+.inputPlusGroup > * {
+    width: 100%;
+
+}
