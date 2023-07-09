@@ -87,11 +87,11 @@ function calculateGraphingData(config:ConfigEntries,paramaters:GraphingParamater
 
         //if repayment option is provided, and there is still value left on loan to be repaid after enforced amount
         if(repayment && (accumulator.loanValue - enforced) > 0){
-            if(repayment.absolute && repayment.absolute > enforced){
-                additional = repayment.absolute - enforced                    
-            } else if(repayment.multiplier){
-                additional = (accumulator.loanValue * repayment.multiplier) - enforced
-            }
+            const multiRepayment = repayment.multiplier ? (accumulator.loanValue * repayment.multiplier) - enforced : 0
+            const absoluteRepayment = repayment.absolute ? repayment.absolute - enforced : 0
+
+            //select larger of the two
+            additional = multiRepayment >= absoluteRepayment ? multiRepayment : absoluteRepayment
 
             //if additional amount is more than is remaining on the loan, only add the amount remaining on the loan
             additional =  additional < (accumulator.loanValue - enforced) ? additional : (accumulator.loanValue - enforced)
@@ -202,7 +202,7 @@ export const useProvideGraphingData = () => {
                         }
                     },
                     repayment:{
-                       multiplier:repaymentAbsolute.state,
+                       multiplier:repaymentMultiplier.state,
                        absolute:repaymentAbsolute.state, 
                     }
                 },
