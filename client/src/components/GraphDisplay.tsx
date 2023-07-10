@@ -68,7 +68,7 @@ const GraphDisplay = () => {
                 <Bar type="monotone" dataKey="marginal-repayment" fill="#d99e14"/>
                 <XAxis dataKey="year"/>
                 <Tooltip/>
-                <YAxis dataKey={yAxisDataKey}/>
+                <YAxis dataKey={yAxisDataKey} width={90}/>
                 <Legend/>
             </ComposedChart>
         </>
