@@ -128,10 +128,12 @@ function calculateGraphingData(config:ConfigEntries,paramaters:GraphingParamater
                     marginal:{
                         enforced:enforced,
                         additional:additional,
+                        total:enforced + additional,
                     },
                     cumulative:{
                         enforced:accumulator.repayments.enforced,
                         additional:accumulator.repayments.additional,
+                        total:accumulator.repayments.additional + accumulator.repayments.enforced,
                     }
                 },
                 income:accumulator.income

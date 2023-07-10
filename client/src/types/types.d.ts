@@ -8,10 +8,12 @@ export interface YearGraphingEntry {
         marginal:{
             enforced:number,
             additional:number,
+            total:number,
         },
         cumulative:{
             enforced:number,
             additional:number,
+            total:number,
         }
     }
     income?:number
