@@ -14,9 +14,13 @@ interface SanitizedGraphingData{
     "year":number,
 }
 
+type YAxisDataKey = "loan-value" | "cumulative-repayment"
+
 const GraphDisplay = () => {
     const {graphingData} = useGraphingData()
     const [sanitizedGraphingData,setSanitizedGraphing] = useState<SanitizedGraphingData[]>([])
+    const [yAxisDataKey,setYAxisDataKey] = useState<YAxisDataKey>("loan-value")
+
 
     useEffect(()=>{
         setSanitizedGraphing(graphingData.map(({value,repayments,year,income})=>{
@@ -34,8 +38,25 @@ const GraphDisplay = () => {
             }))
     },[graphingData])
 
+    useEffect(()=>{
+        //scale graph to fit the largest value
+        let dataKey : YAxisDataKey = "loan-value"
+        sanitizedGraphingData.forEach((data)=>{
+            dataKey = greatestOf(["loan-value","cumulative-repayment","income"],{...data}) as YAxisDataKey
+        })
+
+        setYAxisDataKey(dataKey)
+    },[sanitizedGraphingData])
+
     function round2DP(number:number) : number {
         return Math.round(number * 100) / 100
+    }
+
+    //this function is not optimal
+    function greatestOf(checkKeys:string[],data:{[key:string | number]:number}) : string{
+        const values : number[] = checkKeys.map(key=>data[key] || 0)
+        const max = Math.max(...values)
+        return checkKeys[values.indexOf(max)]
     }
 
     return (
@@ -47,7 +68,7 @@ const GraphDisplay = () => {
                 <Bar type="monotone" dataKey="marginal-repayment" fill="#d99e14"/>
                 <XAxis dataKey="year"/>
                 <Tooltip/>
-                <YAxis dataKey={"loan-value"}/>
+                <YAxis dataKey={yAxisDataKey}/>
                 <Legend/>
             </ComposedChart>
         </>
