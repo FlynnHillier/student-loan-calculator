@@ -1,9 +1,11 @@
-import { useState,createContext,ReactNode } from "react";
+import { useState,createContext,ReactNode,useEffect } from "react";
 import { ConfigEntries } from "../types/types";
 
 import { Multiplier,Year } from "../types/types"
 
 export const useProvideConfig = () => {
+    let [hasLoadedLocalStorage,setHasLoadedLocalStorage] = useState<boolean>(false)
+    
     let [interest,setInterest] = useState<Multiplier>(1) //multiplier
     let [installments,setInstallments] = useState<Map<Year,number>>(new Map<Year,number>())
     
@@ -24,6 +26,91 @@ export const useProvideConfig = () => {
     //## REPAYMENT ##
     let [repaymentAbsolute,setRepaymentAbsolute] = useState<ConfigEntries["repayment"]["absolute"]>(0)
     let [repaymentMultiplier,setRepaymentMultiplier] = useState<ConfigEntries["repayment"]["multiplier"]>(0)
+
+    
+    function mapStringifyReplacer(key:string | number, value:any) {
+        if(value instanceof Map) {
+          return {
+            dataType: 'Map',
+            value: Array.from(value.entries()), // or with spread: value: [...value]
+          };
+        } else {
+          return value;
+        }
+    }
+
+
+    function mapStringifyReviver(key:string | number, value:any) {
+        if(typeof value === 'object' && value !== null) {
+          if (value.dataType === 'Map') {
+            return new Map(value.value);
+          }
+        }
+        return value;
+    }
+
+
+    function restoreFromConfig(config:any){
+        setInstallments(config.installments)
+        setInterest(config.interest)
+        setIncomeAmount(config.incomeAmount)
+        setIncomeAppreciacionActive(config.incomeAppreciationActive)
+        setIncomeAppreciationMulti(config.incomeAppreciationMulti)
+        setIncomeAppreciationAbsolute(config.incomeAppreciationAbsolute)
+        setIncomeThresholdAmount(config.incomeThresholdAmount)
+        setIncomeThresholdEnforcedMultiplier(config.incomeThresholdEnforcedMultiplier)
+        setIncomeThresholdIsActive(config.incomeThresholdIsActive)
+        setRepaymentAbsolute(config.repaymentAbsolute)
+        setRepaymentMultiplier(config.repaymentMultiplier)
+    }
+
+
+    useEffect(()=>{
+        const storedStringifiedConfig = localStorage.getItem("config")
+        if(storedStringifiedConfig){
+            const parsedConfig = JSON.parse(storedStringifiedConfig,mapStringifyReviver)
+            restoreFromConfig(parsedConfig)
+        }
+        setHasLoadedLocalStorage(true)
+    },[])
+    
+    
+
+    useEffect(()=>{ 
+        if(hasLoadedLocalStorage){
+            localStorage.setItem("config",
+                JSON.stringify(
+                    {
+                        installments,
+                        interest,
+                        incomeAmount,
+                        incomeAppreciationActive,
+                        incomeAppreciationMulti,
+                        incomeAppreciationAbsolute,
+                        incomeThresholdAmount,
+                        incomeThresholdEnforcedMultiplier,
+                        incomeThresholdIsActive,
+                        repaymentAbsolute,
+                        repaymentMultiplier,
+                    },
+                    mapStringifyReplacer,
+                )  
+            )
+        }
+    },[
+        hasLoadedLocalStorage,
+        interest,
+        installments,
+        incomeAmount,
+        incomeAppreciationActive,
+        incomeAppreciationMulti,
+        incomeAppreciationAbsolute,
+        incomeThresholdAmount,
+        incomeThresholdEnforcedMultiplier,
+        incomeThresholdIsActive,
+        repaymentAbsolute,
+        repaymentMultiplier,
+    ])
 
     return {
         interest:{
