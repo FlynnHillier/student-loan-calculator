@@ -66,3 +66,10 @@ input.inputplus {
 input.inputplus:focus {
     outline: none;
 }
+
+.inputplus .tooltip {
+    display: inline-block;
+    width:200px;
+    height: fit-content;
+    font-family:Verdana, Geneva, Tahoma, sans-serif;
+}

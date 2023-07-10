@@ -92,8 +92,12 @@ const InputPlus = ({options,onSelectionChange}:Props) => {
                         anchorSelect={`[data-tooltip-id="${toolTipId}"]`}
                         place='left-start'
                         variant='dark'
-                        content={options[activeSelectionIndex].interface.tooltip}
-                    />
+                        className='inputplus tooltip'
+                    >
+                        <div className='inputplus tooltip'>
+                            {options[activeSelectionIndex].interface.tooltip}
+                        </div>
+                    </ReactTooltip>
                     :
                     <></>
                 }
