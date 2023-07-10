@@ -8,11 +8,13 @@ import TypeConversionInput from './TypeConversionInput';
 
 interface Props {
     title?:string
-    mapState:Map<string | number,string | number>
+    mapState:Map<KeyType,ValueType>
     setMapState:React.Dispatch<React.SetStateAction<Map<any, any>>>
     input?:{
         valueType?:"string" | "number",
         keyType?:"string" | "number",
+        keyPlaceHolder?:string,
+        valuePlaceHolder?:string,
     }
 }
 
@@ -166,7 +168,7 @@ const MapDataStructureInteraction = ({mapState,setMapState,title,input}:Props) =
                             let [key,value] = keyValuePair
 
                             return (
-                                <div className='entry'>
+                                <div className='entry' key={key}>
                                     <div className="key">
                                         {key}
                                         <RxCross2 className="removeIcon"
@@ -203,6 +205,7 @@ const MapDataStructureInteraction = ({mapState,setMapState,title,input}:Props) =
                                 ref={newEntryKeyInputRef}
                                 value={newEntryKey}
                                 onKeyDown={handleNewEntryKeyDown}
+                                placeholder={input?.keyPlaceHolder}
                             />
                         </div>
                         <TypeConversionInput 
@@ -212,6 +215,7 @@ const MapDataStructureInteraction = ({mapState,setMapState,title,input}:Props) =
                             type={input?.valueType}
                             value={newEntryValue}
                             onKeyDown={handleNewEntryKeyDown}
+                            placeholder={input?.valuePlaceHolder}
                         />
                     </div>
                 </div>

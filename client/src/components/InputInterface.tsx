@@ -34,7 +34,9 @@ const InputInterface = () => {
                 setState:interest.set,
                 state:interest.state,
                 interface:{
-                  label:"loan interest"
+                  label:"loan interest %",
+                  type:"number",
+                  tooltip:"annual interest on loans, given as a multiplier (e.g 9% increase = 1.09)",
                 }
               }
             ]}
@@ -51,6 +53,7 @@ const InputInterface = () => {
                   interface:{
                     label:"income",
                     type:"number",
+                    tooltip:"your income in £",
                   }
                 }
               ]}
@@ -71,6 +74,7 @@ const InputInterface = () => {
                   interface:{
                     label:"annual growth %",
                     type:"number",
+                    tooltip:"annual income growth, given as a multiplier (e.g 9% increase = 1.09)",
                   }
                 },
                 {
@@ -79,6 +83,7 @@ const InputInterface = () => {
                   interface:{
                     label:"annual growth value",
                     type:"number",
+                    tooltip:"annual income growth, given as an absolute value",
                   }
                 }
               ]}
@@ -93,6 +98,7 @@ const InputInterface = () => {
                   interface:{
                     label:"amount",
                     type:"number",
+                    tooltip:"the income amount in which any income above this level will be subject to enforced repayments",
                   }
                 }
               ]}
@@ -106,6 +112,7 @@ const InputInterface = () => {
                   interface:{
                     label:"enforced repayment %",
                     type:"number",
+                    tooltip:"the percentage of income above the given threshold that must be paid annually toward the loan, given as a percentage (e.g 9% = 0.09)",
                   }
                 }
               ]}
@@ -123,6 +130,7 @@ const InputInterface = () => {
                   interface:{
                     label:"repayment value",
                     type:"number",
+                    tooltip:"optional repayment, given as an absolute. Note: the larger value of % or absolute will be used in calculations, not both."
                   }
                 }
               ]}
@@ -135,6 +143,7 @@ const InputInterface = () => {
                   interface:{
                     label:"repayment %",
                     type:"number",
+                    tooltip:"optional repayment, given as a percentage. Note: the larger value of % or absolute will be used in calculations, not both."
                   }
                 }
               ]}
@@ -150,7 +159,9 @@ const InputInterface = () => {
             title='installments'
             input={{
               keyType:"number",
-              valueType:"number"
+              valueType:"number",
+              valuePlaceHolder:"loan-value",
+              keyPlaceHolder:"year",
             }}
           />
         </div>

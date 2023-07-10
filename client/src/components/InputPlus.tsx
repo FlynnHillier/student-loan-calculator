@@ -1,6 +1,7 @@
-import {useState,useRef} from 'react'
+import {useState,useRef, useEffect} from 'react'
 import "./../styles/inputPlus.css"
 import TypeConversionInput from './TypeConversionInput'
+import { Tooltip as ReactTooltip } from "react-tooltip";
 
 interface SelectionOption {
     setState:(...args:any[]) => any,
@@ -8,7 +9,8 @@ interface SelectionOption {
     interface:{
         label?:string,
         placeholder?:string,
-        type?:"string" | "number"
+        type?:"string" | "number",
+        tooltip?:string,
     }
 }
 
@@ -20,8 +22,14 @@ interface Props {
 
 const InputPlus = ({options,onSelectionChange}:Props) => {
     const [activeSelectionIndex,setActiveSelectionIndex] = useState<number>(0)
+    const [toolTipId,setToolTipId] = useState<string>("")
+
 
     const inputRef = useRef<any>(null)
+
+    useEffect(()=>{
+        setToolTipId(generateID())
+    },[activeSelectionIndex])
 
     function changeSelection(){
         setActiveSelectionIndex((previousSelection)=>{
@@ -55,22 +63,45 @@ const InputPlus = ({options,onSelectionChange}:Props) => {
         options[activeSelectionIndex].setState(value)
     }
 
+    function generateID(){
+        const {label,placeholder,type} = options[activeSelectionIndex].interface
+
+        return `inputPlus-${label}_${type}_${placeholder}`
+    }
+
     return (
-            options.length <= 0 ? <></> : 
-            <div className='inputplus frame'>
-                <button className={`inputplus label ${options.length > 1 ? "isMulti" : ""}`} onClick={handleClick}>
-                        {options[activeSelectionIndex].interface.label}
-                </button>
-                <TypeConversionInput
-                    convertTo='number'
-                    onValueChange={handleValueChange}
-                    ref={inputRef}
-                    className='inputplus input'
-                    placeholder={options[activeSelectionIndex].interface.placeholder}
-                    type={options[activeSelectionIndex].interface.type}
-                    value={options[activeSelectionIndex].state}
-                />
-            </div>
+            options.length <= 0 ? <></> :
+            <>
+                <div className='inputplus frame'>
+                    <button data-tooltip-id={toolTipId} className={`inputplus label ${options.length > 1 ? "isMulti" : ""}`} onClick={handleClick}>
+                            {options[activeSelectionIndex].interface.label}
+                    </button>
+                    <TypeConversionInput
+                        convertTo='number'
+                        onValueChange={handleValueChange}
+                        ref={inputRef}
+                        className='inputplus input'
+                        placeholder={options[activeSelectionIndex].interface.placeholder}
+                        type={options[activeSelectionIndex].interface.type}
+                        value={options[activeSelectionIndex].state}
+                    />
+                </div>
+                {
+                    options[activeSelectionIndex].interface.tooltip ? 
+                    <ReactTooltip
+                        anchorSelect={`[data-tooltip-id="${toolTipId}"]`}
+                        place='left-start'
+                        variant='dark'
+                        className='inputplus tooltip'
+                    >
+                        <div className='inputplus tooltip'>
+                            {options[activeSelectionIndex].interface.tooltip}
+                        </div>
+                    </ReactTooltip>
+                    :
+                    <></>
+                }
+            </> 
     )
 }
 
